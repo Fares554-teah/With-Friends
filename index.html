@@ -1,0 +1,837 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<meta name="theme-color" content="#0e1020">
+<title>With Friends</title>
+<style>
+:root{--bg:#0e1020;--s1:#171a30;--s2:#20243f;--line:#2c3150;--tx:#eceefc;--mut:#9aa0c4;--ac:#ff5d4d;--ac2:#7b8cff;--ok:#38c98a;--warn:#ffc857;--r:14px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx);font-size:15px;line-height:1.35;overscroll-behavior:none}
+button,input{font-family:inherit}
+h2{margin:0;font-size:20px}
+.hide{display:none!important}
+.center{text-align:center}.mut{color:var(--mut)}
+
+#shell{height:100vh;height:100dvh;display:flex;flex-direction:column;max-width:520px;margin:0 auto}
+#top{flex:none;display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--s1)}
+#view{flex:1;min-height:0;overflow-y:auto;padding:14px 14px 18px}
+#dock{flex:none;background:var(--s1);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.screen:not(.hide){animation:fadeUp .35s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.icb{width:40px;height:40px;border:0;border-radius:12px;background:var(--s2);color:var(--tx);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.chip{border:0;background:var(--s2);color:var(--tx);border-radius:999px;padding:8px 14px;font-size:14px;cursor:pointer}
+#t-code{flex:1;text-align:center}
+#t-game{color:var(--mut);cursor:default}
+
+.card{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.lbl{font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--mut);margin-bottom:8px}
+.hint{font-size:13px;color:var(--mut);margin-top:8px}
+input{width:100%;height:46px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--tx);font-size:16px;outline:none}
+input:focus{border-color:var(--ac2)}
+.btn{height:46px;padding:0 16px;border:0;border-radius:12px;background:var(--ac);color:#fff;font-weight:700;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;min-width:0;transition:transform .12s,filter .12s}
+.btn:active{transform:scale(.97)}
+.btn.sec{background:var(--s2);color:var(--tx)}
+.btn.ghost{background:transparent;color:var(--mut);border:1px solid var(--line)}
+.btn.block{width:100%}
+.btn:disabled{opacity:.4;cursor:default}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.divider{display:flex;align-items:center;gap:10px;color:var(--mut);font-size:13px;margin:14px 0}
+.divider:before,.divider:after{content:"";flex:1;height:1px;background:var(--line)}
+.err{color:#ff8a8a;font-size:13px;min-height:18px;margin:6px 0}
+
+.brand{text-align:center;margin:14px 0 18px}
+.brand .logo{font-size:48px;line-height:1;display:inline-block;animation:bob 2.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-6px) rotate(4deg)}}
+.brand h1{margin:8px 0 2px;font-size:30px;letter-spacing:.3px;background:linear-gradient(90deg,#ff8a5c,#ff5d8f,#7b8cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand p{margin:0;color:var(--mut)}
+.method{width:100%;height:52px;display:flex;align-items:center;gap:14px;padding:0 16px;margin-bottom:10px;border:1px solid var(--line);border-radius:14px;background:var(--s2);color:var(--tx);font-size:16px;font-weight:600;cursor:pointer;transition:transform .12s,border-color .15s}
+.method:active{transform:scale(.98)}
+.method:hover{border-color:var(--ac2)}
+.method .mi{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.back{border:0;background:none;color:var(--mut);font-size:14px;padding:0 0 10px;cursor:pointer;display:flex;align-items:center;gap:4px}
+details{margin:4px 0 8px;color:var(--mut)}
+summary{cursor:pointer;color:var(--tx);padding:6px 0}
+details ol{padding-left:20px;margin:6px 0 0;font-size:14px}details li{margin-bottom:4px}
+
+.gh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gcard{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:140px;padding:14px;border-radius:16px;border:1px solid var(--line);background:var(--s1);color:var(--tx);text-align:left;cursor:pointer;overflow:hidden;transition:transform .15s,border-color .15s}
+.gcard .ge{font-size:34px;line-height:1}
+.gcard b{font-size:16px}.gcard small{color:var(--mut);font-size:12px}
+.gcard.live{background:linear-gradient(150deg,#3a1d2c,#1d1f3a);border-color:#5a2f46;grid-column:1/-1;min-height:120px}
+.gcard.live:active{transform:scale(.98)}
+.gcard.live .go{margin-top:auto;font-weight:700;color:#fff;background:var(--ac);padding:6px 14px;border-radius:999px;font-size:13px}
+.gcard.soon{opacity:.55;cursor:default}
+.gcard .lock{position:absolute;top:12px;right:12px;color:var(--mut)}
+.gcard .soonb{margin-top:auto;font-size:12px;color:var(--mut);border:1px dashed var(--line);border-radius:999px;padding:3px 10px}
+
+.av{display:flex;align-items:center;justify-content:center;border-radius:50%;font-weight:700;color:#fff;flex:none;width:40px;height:40px;font-size:17px}
+.code{font-size:38px;font-weight:800;letter-spacing:8px;text-align:center;padding-left:8px}
+.plist{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pitem{display:flex;align-items:center;gap:8px;background:var(--s2);border-radius:12px;padding:8px;min-width:0}
+.pitem .pn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.you{flex:none;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:0 6px}
+.stepper{display:flex;align-items:center;justify-content:space-between}
+.stepper b{font-size:24px}.stepper .btn{width:56px;padding:0;font-size:22px}
+
+.strip{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:6px}
+.pill{background:var(--s2);border-radius:999px;padding:5px 12px;font-size:13px;color:var(--mut)}
+.pill b{color:var(--tx)}
+.circle{--c:min(84vw,36dvh,340px);position:relative;width:var(--c);height:var(--c);margin:8px auto 10px}
+.ring{position:absolute;inset:12%;border-radius:50%;border:1px dashed var(--line)}
+.core{position:absolute;inset:31%;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--s1);border:1px solid var(--line);font-size:44px;font-weight:800;color:var(--ac)}
+.core.go{box-shadow:0 0 0 0 rgba(255,93,77,.5);animation:ping 1.2s ease-out infinite}
+@keyframes ping{to{box-shadow:0 0 0 18px rgba(255,93,77,0)}}
+.num.tick{display:inline-block;animation:pop .25s ease}
+@keyframes pop{from{transform:scale(1.4);opacity:.4}to{transform:scale(1);opacity:1}}
+.pl{position:absolute;width:64px;transform:translate(-50%,-50%);text-align:center}
+.pl .av{width:44px;height:44px;margin:0 auto;font-size:18px}
+.pl.me .av{box-shadow:0 0 0 2px var(--ac2)}
+.pl.hl .av{box-shadow:0 0 0 3px var(--warn);animation:lit .25s ease both}
+@keyframes lit{from{transform:scale(.9)}to{transform:scale(1.15)}}
+.pl.hit .av{animation:shake .5s ease,flash .5s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes flash{0%{filter:brightness(2) saturate(2)}100%{filter:none}}
+.pl.dead{opacity:.35;filter:grayscale(1)}
+.pl .nm{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+.hd{font-size:10px;line-height:1;height:12px;letter-spacing:-1px}
+.bz{position:absolute;top:-6px;right:2px;font-size:13px;background:var(--s1);border-radius:999px;padding:0 3px;border:1px solid var(--line)}
+.event{text-align:center;color:var(--mut);font-size:14px;margin:4px 0 8px}
+.status{text-align:center;margin:8px 0 10px}
+.status .big{font-size:17px;font-weight:700}
+.status .sub{color:var(--mut);font-size:14px;margin-top:2px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--s2);border-radius:14px;padding:4px;margin-top:6px}
+.seg button{height:42px;border:0;border-radius:10px;background:transparent;color:var(--mut);font-weight:700;font-size:14px;cursor:pointer;transition:background .15s,color .15s}
+.seg button.on{background:var(--s1);color:var(--tx)}
+.seg button.on.bzon{background:var(--ac);color:#fff}
+.targets{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.tg{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--line);border-radius:12px;padding:8px;color:var(--tx);font-size:14px;text-align:left;min-height:54px;cursor:pointer;min-width:0;transition:transform .12s,border-color .15s}
+.tg:active{transform:scale(.97)}
+.tg.arm{border-color:var(--ac);background:#3a1f2a}
+.tg .t{min-width:0}.tg .tn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.duel{display:flex;align-items:center;justify-content:center;gap:16px;margin:10px 0 4px}
+.duel>div{text-align:center}
+.duel .who{font-size:13px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.duel .av{margin:0 auto 4px;width:52px;height:52px;font-size:22px}
+.duel .vs{font-weight:800;color:var(--mut)}
+.duel .pick{font-size:34px;animation:pop .4s ease both}
+.duel .win .av{box-shadow:0 0 0 3px var(--warn)}
+.rps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.rpsb{display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 0;background:var(--s2);border:1px solid var(--line);border-radius:14px;color:var(--tx);font-size:13px;cursor:pointer;transition:transform .12s}
+.rpsb:active{transform:scale(.94)}
+.rpsb span{font-size:38px;line-height:1}
+.trophy{font-size:44px;display:inline-block;animation:bounce .8s ease both}
+@keyframes bounce{0%{transform:scale(.3)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+.lb{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.lb:last-child{border-bottom:0}.lb .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+#chatpanel{display:flex;flex-direction:column;height:min(36dvh,260px);border-bottom:1px solid var(--line)}
+#chatlog{flex:1;min-height:0;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.cm{max-width:82%;align-self:flex-start;padding:6px 10px;border-radius:12px;background:var(--s2);font-size:14px;word-break:break-word;animation:fadeUp .2s ease both}
+.cm b{display:block;font-size:11px;color:var(--mut);font-weight:600}
+.cm.me{align-self:flex-end;background:#33335f}
+#chatform{display:flex;gap:8px;padding:8px 10px;border-top:1px solid var(--line)}
+#chatform input{height:42px}
+#chatform .btn{width:48px;padding:0;height:42px;flex:none}
+#dockbar{display:flex;gap:8px;padding:8px 10px}
+#b-chat{flex:1;justify-content:flex-start;min-width:0}
+#pv{flex:1;min-width:0;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;color:var(--mut)}
+#b-mic{flex:none}
+#b-mic.on{background:#1d4a3a;color:#7ff0c0}
+#b-mic.muted{background:#4a2530;color:#ff9aa8}
+.badge{background:var(--ac);color:#fff;border-radius:999px;font-size:11px;padding:1px 7px;font-weight:700}
+
+#toast{position:fixed;top:64px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:8px 14px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9;max-width:90vw;text-align:center}
+#toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="shell">
+  <header id="top" class="hide">
+    <button class="icb" data-a="leave" aria-label="Leave room"><span data-i="exit"></span></button>
+    <button id="t-code" class="chip" data-a="copy" aria-label="Copy room code"></button>
+    <span id="t-game" class="chip"></span>
+  </header>
+
+  <main id="view">
+    <div id="loading" class="center mut" style="margin-top:30vh">Loading…</div>
+    <script>setTimeout(function(){var l=document.getElementById('loading');if(l&&!l.classList.contains('hide'))l.innerHTML='Still loading… if this takes long, try another network (Wi-Fi or mobile data) and reload.'},8000);</script>
+
+    <section id="s-setup" class="card hide">Firebase is not configured yet. Open index.html and fill in the CFG block near the top of the script.</section>
+
+    <!-- LOGIN -->
+    <section id="s-login" class="screen hide">
+      <div class="brand"><div class="logo">🎉</div><h1>With Friends</h1><p>Party games to play together</p></div>
+      <div id="methods" class="card">
+        <button class="method" data-a="google"><span class="mi" data-i="google" data-s="24"></span>Continue with Google</button>
+        <button class="method" data-a="emailmode"><span class="mi" data-i="mail"></span>Continue with email</button>
+        <button class="method" data-a="guest"><span class="mi" data-i="user"></span>Play as guest</button>
+        <div class="err" id="err0"></div>
+      </div>
+      <div id="emailbox" class="card hide">
+        <button class="back" data-a="emailback"><span data-i="back" data-s="16"></span> Back</button>
+        <input id="em" type="email" placeholder="Email" autocomplete="email" autocapitalize="none">
+        <div style="height:10px"></div>
+        <input id="pw" type="password" placeholder="Password (min. 6 characters)" autocomplete="current-password">
+        <div class="err" id="err"></div>
+        <div class="row"><button class="btn" data-a="login">Log in</button><button class="btn sec" data-a="signup">Sign up</button></div>
+      </div>
+    </section>
+
+    <!-- GAMES -->
+    <section id="s-games" class="screen hide">
+      <div class="gh"><div><div class="mut" id="who" style="font-size:13px"></div><h2>Choose a game</h2></div><button class="icb" data-a="signout" aria-label="Log out"><span data-i="logout"></span></button></div>
+      <div class="grid" id="gamegrid"></div>
+    </section>
+
+    <!-- BAZOOKA: create / join -->
+    <section id="s-bz" class="screen hide">
+      <div class="gh"><button class="icb" data-a="toGames" aria-label="Back"><span data-i="back"></span></button><h2>💥 Bazooka</h2><span style="width:40px"></span></div>
+      <div class="card">
+        <div class="lbl">Your name</div>
+        <input id="nm" placeholder="Enter a name" maxlength="12" autocomplete="nickname">
+        <button class="btn block" data-a="create" style="margin-top:12px">Create room</button>
+        <div class="divider">or join a friend</div>
+        <div class="row"><input id="jc" placeholder="CODE" maxlength="4" autocapitalize="characters" autocomplete="off" style="flex:1.4;text-transform:uppercase;letter-spacing:4px;text-align:center"><button class="btn sec" data-a="join">Join</button></div>
+        <div class="err" id="err2"></div>
+      </div>
+      <div id="rules-home"></div>
+    </section>
+
+    <!-- ROOM -->
+    <section id="s-room" class="hide"><div id="main"></div></section>
+  </main>
+
+  <footer id="dock" class="hide">
+    <div id="chatpanel" class="hide">
+      <div id="chatlog"></div>
+      <form id="chatform" autocomplete="off">
+        <input id="cm" placeholder="Message…" maxlength="200" enterkeyhint="send">
+        <button class="btn" type="submit" aria-label="Send"><span data-i="send"></span></button>
+      </form>
+    </div>
+    <div id="dockbar">
+      <button class="btn sec" id="b-chat" data-a="chat"><span data-i="chat"></span><span id="pv">Chat</span><span id="bd" class="badge hide"></span></button>
+      <button class="btn sec" id="b-mic" data-a="mic"><span id="mic-ic"></span><span id="mic-tx">Mic off</span></button>
+    </div>
+  </footer>
+</div>
+<div id="toast"></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithPopup,GoogleAuthProvider,signInAnonymously,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getDatabase,ref,onValue,onChildAdded,set,update,push,get,remove,onDisconnect,query,limitToLast} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+/* ====== Firebase config ====== */
+const CFG={
+  apiKey:"AIzaSyDDMtIsrcnFgFLoYbgHPWRM9poOoxY-3Eo",
+  authDomain:"bazooka-game.firebaseapp.com",
+  databaseURL:"https://bazooka-game-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"bazooka-game",
+  appId:"1:714693634255:web:a9e8ad826f793f4b066fba"
+};
+/* ============================= */
+
+/*LOGIC_START*/
+const ICON={r:'✊',p:'✋',s:'✌️'};
+const BEATS={r:'s',p:'r',s:'p'};
+const clean=o=>JSON.parse(JSON.stringify(o));
+/* Firebase drops empty arrays/objects, so always restore defaults after reading */
+function norm(g){
+  g.order=g.order||[];g.hearts=g.hearts||{};g.names=g.names||{};g.out=g.out||[];g.wins=g.wins||{};g.slots=g.slots||[];g.bz=g.bz||{};
+  g.msg=g.msg||'';g.start=g.start||0;g.turn=g.turn||0;g.total=g.total||1;
+  return g;
+}
+const gn=(g,u)=>(u&&g.names[u])||'?';
+const bzOf=(g,u)=>(g.bz&&g.bz[u])||0;
+const alive=g=>g.order.filter(u=>(g.hearts[u]||0)>0);
+const rotate=(a,k)=>{if(!a.length)return[];k=((k%a.length)+a.length)%a.length;return a.slice(k).concat(a.slice(0,k))};
+/* 3 hands (interlocked) = counted once, 2 hands = counted twice, 1 hand = counted once */
+const weight=h=>h===2?2:1;
+function buildTurn(g){
+  const s=[];
+  rotate(alive(g),g.start).forEach(u=>{for(let k=0;k<weight(g.hearts[u]);k++)s.push(u)});
+  g.slots=s;
+  g.landed=s.length?s[9%s.length]:null;
+  g.phase='counting';
+}
+function newGame(num,total,bz,wins,order,names){
+  const hearts={};order.forEach(u=>{hearts[u]=3});
+  const g={game:num,total:total,order:order,names:names,hearts:hearts,out:[],bz:clean(bz||{}),start:0,turn:0,wins:wins||{},msg:'',phase:'counting'};
+  buildTurn(g);return g;
+}
+function toRps(g,present){
+  present=present||(()=>true);
+  g.rpsA=alive(g)[0]||null;
+  g.rpsB=null;
+  for(let i=g.out.length-1;i>=0;i--){if(present(g.out[i])){g.rpsB=g.out[i];break}}
+  if(!g.rpsB&&g.out.length)g.rpsB=g.out[g.out.length-1];
+  g.phase='rps';
+}
+/* the duel winner earns one bazooka (not after the last game); unused bazookas carry over and stack */
+function finish(g,w){
+  g.winner=w;g.wins[w]=(g.wins[w]||0)+1;g.awarded=null;
+  if(w&&g.game<g.total){g.bz[w]=bzOf(g,w)+1;g.awarded=w}
+  g.phase='gameover';
+}
+function advance(g,present){
+  if(alive(g).length<=1)toRps(g,present);
+  else{g.turn++;g.start++;buildTurn(g)}
+}
+function applyAction(g,act,present){
+  if(g.phase!=='choose'||!act||act.by!==g.landed)return false;
+  const t=act.target,by=g.landed;
+  if(!((g.hearts[t]||0)>0))return false;
+  const useBz=!!act.bz&&bzOf(g,by)>0;
+  const who=t===by?'themselves':gn(g,t);
+  if(useBz){
+    g.hearts[t]=0;g.bz[by]=bzOf(g,by)-1;if(g.bz[by]<=0)delete g.bz[by];
+    g.msg='💥 '+gn(g,by)+' blasted '+who+' with a bazooka!';
+  }else{
+    g.hearts[t]=Math.max(0,g.hearts[t]-1);g.msg=gn(g,by)+' took a hand from '+who;
+  }
+  if(g.hearts[t]===0){g.out.push(t);g.msg+=' — '+gn(g,t)+' is out!'}
+  advance(g,present);
+  return true;
+}
+function resolveRps(g,rps){
+  if(g.phase!=='rps'||!g.rpsA||!g.rpsB)return false;
+  const a=rps&&rps[g.rpsA],b=rps&&rps[g.rpsB];
+  if(!a||!b)return false;
+  if(a===b){g.msg='Tie ('+ICON[a]+') — go again!';return 'tie'}
+  const w=BEATS[a]===b?g.rpsA:g.rpsB;
+  g.pa=a;g.pb=b;
+  g.msg=gn(g,w)+' wins the duel';
+  finish(g,w);return true;
+}
+/* handles players who left: knocks them out, and ends/continues the game if needed */
+function reconcile(g,present){
+  if(g.phase==='gameover'||g.phase==='final')return false;
+  let dirty=false;
+  if(g.phase!=='rps'){
+    for(const u of g.order){
+      if((g.hearts[u]||0)>0&&!present(u)){g.hearts[u]=0;g.out.push(u);g.msg=gn(g,u)+' left the game';dirty=true}
+    }
+    if(dirty){
+      if(alive(g).length<=1)toRps(g,present);
+      else{g.turn++;g.start++;buildTurn(g)}
+    }
+  }
+  if(g.phase==='rps'){
+    const pa=g.rpsA?present(g.rpsA):false,pb=g.rpsB?present(g.rpsB):false;
+    if(!pa&&!pb){g.phase='final';return true}
+    if(!pa||!pb){
+      const w=pa?g.rpsA:g.rpsB;
+      g.msg=gn(g,pa?g.rpsB:g.rpsA)+' left — '+gn(g,w)+' wins by default';
+      finish(g,w);return true;
+    }
+  }
+  return dirty;
+}
+/*LOGIC_END*/
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const hands=n=>n>0?'✋'.repeat(n):'💀';
+const hue=u=>{let h=0;for(const c of String(u))h=(h*31+c.charCodeAt(0))%360;return h};
+const av=(u,name,sz)=>`<div class="av" style="background:hsl(${hue(u)} 42% 40%);${sz?`width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.42)}px`:''}">${esc([...String(name||'?').trim()][0]||'?').toUpperCase()}</div>`;
+
+const I={
+  chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/>',
+  mic:'<path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+  micoff:'<path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M3 3l18 18"/>',
+  exit:'<path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 8l4 4-4 4M20 12H9"/>',
+  logout:'<path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 8l4 4-4 4M20 12H9"/>',
+  back:'<path d="M15 5l-7 7 7 7"/>',
+  copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',
+  share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4"/>',
+  send:'<path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'
+};
+const GOOGLE='<svg width="24" height="24" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+const ic=(n,s)=>`<svg width="${s||20}" height="${s||20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]}</svg>`;
+document.querySelectorAll('[data-i]').forEach(e=>{e.innerHTML=e.dataset.i==='google'?GOOGLE:ic(e.dataset.i,+e.dataset.s||20)});
+
+const RULES=`<details><summary>How to play</summary><ol>
+<li>Everyone starts with 3 hands, locked together.</li>
+<li>The count goes around the circle up to 10, starting from a different player each turn. With 3 hands or 1 hand you are counted once; with 2 hands you are counted twice.</li>
+<li>Whoever the count lands on takes one hand from any player — even themselves.</li>
+<li>No hands left = out. The last player standing duels the last player knocked out in Rock-Paper-Scissors.</li>
+<li>The duel winner earns a bazooka for the next games. One bazooka knocks a player out in a single shot. Unused bazookas carry over and stack.</li></ol></details>`;
+$('#rules-home').innerHTML=RULES;
+
+const GAMES=[
+  {id:'bazooka',name:'Bazooka',emoji:'💥',tag:'2–10 players · Last one standing',live:true},
+  {name:'Mystery game',emoji:'❓'},{name:'Mystery game',emoji:'❓'},{name:'Mystery game',emoji:'❓'},{name:'Mystery game',emoji:'❓'}
+];
+$('#gamegrid').innerHTML=GAMES.map(g=>g.live
+  ?`<button class="gcard live" data-a="play" data-g="${g.id}"><span class="ge">${g.emoji}</span><b>${g.name}</b><small>${g.tag}</small><span class="go">Play</span></button>`
+  :`<div class="gcard soon"><span class="lock">${ic('lock',18)}</span><span class="ge">${g.emoji}</span><b>${g.name}</b><span class="soonb">Coming soon</span></div>`).join('');
+
+let toastT;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200)}
+
+if(CFG.apiKey.startsWith('PUT_')){$('#loading').classList.add('hide');$('#s-setup').classList.remove('hide');throw new Error('no config')}
+const app=initializeApp(CFG),auth=getAuth(app),db=getDatabase(app);
+
+let me=null,code=null,room={},myName='',unsubs=[],loaded=new Set(),gone={};
+let chatOpen=false,unread=0,lastMsg='';
+let scrollKey='',bzOn=false,timerKey='',animKey='',animT=null,animN=0,animUid=null,chT=0,prevH=null;
+const R=p=>ref(db,'rooms/'+code+(p?'/'+p:''));
+const isHost=()=>!!(me&&room&&room.host===me.uid);
+const nameOf=u=>(room.g&&room.g.names&&room.g.names[u])||(room.players&&room.players[u]&&room.players[u].name)||'?';
+
+/* ---------- screens ---------- */
+const SCREENS=['s-setup','s-login','s-games','s-bz','s-room'];
+function show(id){
+  for(const s of SCREENS)$('#'+s).classList.toggle('hide',s!==id);
+  $('#loading').classList.add('hide');
+  const inRoom=id==='s-room';
+  $('#top').classList.toggle('hide',!inRoom);
+  $('#dock').classList.toggle('hide',!inRoom);
+  if(!inRoom)closeChat();
+  $('#view').scrollTop=0;
+}
+
+/* ---------- auth ---------- */
+const ERR={
+  'auth/invalid-credential':'Wrong email or password','auth/wrong-password':'Wrong email or password','auth/user-not-found':'No account with this email',
+  'auth/invalid-email':'That email looks invalid','auth/email-already-in-use':'Email already registered — try logging in',
+  'auth/weak-password':'Password must be at least 6 characters','auth/missing-password':'Enter your password',
+  'auth/network-request-failed':'Network problem — check your connection','auth/popup-closed-by-user':'Sign-in cancelled','auth/cancelled-popup-request':'Sign-in cancelled',
+  'auth/unauthorized-domain':'This website is not authorized in Firebase yet','auth/operation-not-allowed':'This sign-in method is disabled in Firebase',
+  'auth/too-many-requests':'Too many attempts — try again later','auth/popup-blocked':'Popup blocked — allow popups and retry'
+};
+const authErr=m=>{$('#err').textContent=m||'';$('#err0').textContent=m||''};
+async function authDo(fn){
+  authErr('');
+  try{await fn()}catch(e){console.warn(e);authErr(ERR[e.code]||('Something went wrong ('+(e.code||e.message)+')'))}
+}
+onAuthStateChanged(auth,u=>{
+  const prev=me;me=u;
+  if(!u){show('s-login');return}
+  if(prev&&prev.uid===u.uid&&code)return;
+  $('#nm').value=LS.get('nm')||String(u.displayName||'').split(' ')[0].slice(0,12);
+  $('#who').textContent=u.isAnonymous?'Playing as guest':('Signed in as '+(u.email||u.displayName||''));
+  const q=new URLSearchParams(location.search).get('room');
+  if(q){$('#jc').value=q.toUpperCase().replace(/[^A-Z]/g,'').slice(0,4);show('s-bz')}
+  else show('s-games');
+});
+
+/* ---------- rooms ---------- */
+const homeErr=m=>{$('#err2').textContent=m||''};
+function readName(){
+  const n=$('#nm').value.trim().slice(0,12);
+  if(!n){homeErr('Enter your name first');return null}
+  LS.set('nm',n);myName=n;homeErr('');return n;
+}
+const randCode=()=>Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random()*24)]).join('');
+
+async function createRoom(){
+  const n=readName();if(!n)return;
+  try{
+    let c=randCode();
+    for(let i=0;i<5;i++){const s=await get(ref(db,'rooms/'+c));if(!s.exists())break;c=randCode()}
+    await set(ref(db,'rooms/'+c),{host:me.uid,total:3,players:{[me.uid]:{name:n}}});
+    enter(c);
+  }catch(e){console.warn(e);homeErr('Could not create the room — check your connection')}
+}
+async function joinRoom(){
+  const n=readName();if(!n)return;
+  const c=$('#jc').value.trim().toUpperCase();
+  if(c.length!==4){homeErr('Enter the 4-letter room code');return}
+  try{
+    const s=await get(ref(db,'rooms/'+c));
+    if(!s.exists()){homeErr('Room not found');return}
+    const r=s.val(),ps=r.players||{};
+    if(r.g&&!ps[me.uid]){homeErr('That game already started');return}
+    if(!ps[me.uid]&&Object.keys(ps).length>=10){homeErr('Room is full (10 players)');return}
+    await set(ref(db,`rooms/${c}/players/${me.uid}`),{name:n});
+    enter(c);
+  }catch(e){console.warn(e);homeErr('Could not join — check your connection')}
+}
+
+function enter(c){
+  code=c;room={};loaded=new Set();gone={};animKey='';timerKey='';bzOn=false;unread=0;lastMsg='';prevH=null;
+  show('s-room');
+  $('#chatlog').innerHTML='';updateDock();
+  for(const key of ['host','total','players','g','act','rps']){
+    unsubs.push(onValue(R(key),s=>{
+      room[key]=s.val();loaded.add(key);
+      if(key==='host'&&s.val()===null){leaveLocal('The room was closed');return}
+      changed();
+    }));
+  }
+  const t0=Date.now();
+  unsubs.push(onChildAdded(query(R('chat'),limitToLast(30)),s=>addChat(s.val(),Date.now()-t0<1500)));
+  /* keep my player entry alive across reconnects */
+  unsubs.push(onValue(ref(db,'.info/connected'),async s=>{
+    if(!s.val()||!code)return;
+    try{
+      onDisconnect(R('players/'+me.uid)).remove();
+      const h=await get(R('host'));
+      if(h.exists()&&code)await set(R('players/'+me.uid),clean({name:myName||nameOf(me.uid),pid:myPid||null}));
+    }catch(e){console.warn(e)}
+  }));
+  initPeer();
+}
+function cleanupLocal(){
+  unsubs.forEach(f=>{try{f()}catch(e){}});unsubs=[];
+  clearInterval(animT);clearTimeout(chT);stopMic();
+}
+function leaveLocal(msg){
+  cleanupLocal();code=null;room={};show('s-bz');
+  if(msg)toast(msg);
+}
+async function leave(){
+  if(!code)return;
+  const c=code,u=me.uid,g=room.g;
+  if(g&&g.phase!=='final'&&g.phase!=='gameover'&&!confirm('Leave the game?'))return;
+  cleanupLocal();code=null;room={};show('s-bz');
+  const pr=ref(db,`rooms/${c}/players/${u}`);
+  try{
+    try{await onDisconnect(pr).cancel()}catch(e){}
+    const s=await get(ref(db,'rooms/'+c));
+    const rm=s.val();
+    if(rm){
+      const others=Object.keys(rm.players||{}).filter(k=>k!==u);
+      if(!others.length)await remove(ref(db,'rooms/'+c));
+      else{
+        await remove(pr);
+        if(rm.host===u)await set(ref(db,`rooms/${c}/host`),others[0]);
+      }
+    }
+  }catch(e){console.warn(e)}
+}
+function ensureHost(){
+  const ps=room.players||{};
+  if(!room.host||ps[room.host])return;
+  if(Object.keys(ps).sort()[0]!==me.uid)return;
+  setTimeout(()=>{
+    const p=room.players||{};
+    if(code&&room.host&&!p[room.host]&&Object.keys(p).sort()[0]===me.uid)set(R('host'),me.uid).catch(()=>{});
+  },3500);
+}
+
+function changed(){
+  clearTimeout(chT);
+  chT=setTimeout(()=>{
+    if(!code||loaded.size<6)return;
+    render();renderTop();hostLogic();ensureHost();micSync();
+  },25);
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&code)changed()});
+
+/* ---------- host: runs the game rules ---------- */
+const GRACE=6000;
+function presentFn(){
+  const now=Date.now();
+  return u=>{
+    if(room.players&&room.players[u]){delete gone[u];return true}
+    if(!gone[u]){gone[u]=now;setTimeout(hostLogic,GRACE+300)}
+    return now-gone[u]<GRACE;
+  };
+}
+function hostLogic(){
+  if(!code||!isHost()||!room.g||loaded.size<6)return;
+  const g=norm(clean(room.g)),present=presentFn(),extra={};
+  let dirty=reconcile(g,present);
+  if(g.phase==='choose'&&room.act){
+    applyAction(g,room.act,present);
+    extra.act=null;dirty=true;
+  }else if(room.act&&g.phase!=='choose'){extra.act=null;dirty=true}
+  if(g.phase==='rps'){
+    const r=resolveRps(g,room.rps||{});
+    if(r==='tie'){extra.rps=null;dirty=true}else if(r)dirty=true;
+  }
+  if(g.phase==='counting'){
+    const k=g.game+'-'+g.turn;
+    if(timerKey!==k){
+      timerKey=k;
+      setTimeout(()=>{
+        const cg=room.g;
+        if(code&&isHost()&&cg&&cg.phase==='counting'&&(cg.game+'-'+cg.turn)===k)update(R('g'),{phase:'choose'}).catch(()=>{});
+      },4800);
+    }
+  }
+  if(dirty)update(R(),{g:clean(g),...extra}).catch(e=>console.warn(e));
+}
+
+/* ---------- actions ---------- */
+function startPayload(num,total,bz,wins,ids){
+  const ps=room.players||{},names={};
+  ids.forEach(u=>{names[u]=(ps[u]&&ps[u].name)||'?'});
+  return {g:clean(newGame(num,total,bz,wins,shuffle(ids),names)),act:null,rps:null};
+}
+async function act(a,b){
+  switch(a){
+    case 'google':return authDo(()=>signInWithPopup(auth,new GoogleAuthProvider()));
+    case 'guest':return authDo(()=>signInAnonymously(auth));
+    case 'emailmode':authErr('');$('#methods').classList.add('hide');$('#emailbox').classList.remove('hide');return;
+    case 'emailback':authErr('');$('#emailbox').classList.add('hide');$('#methods').classList.remove('hide');return;
+    case 'login':return authDo(()=>signInWithEmailAndPassword(auth,$('#em').value.trim(),$('#pw').value));
+    case 'signup':return authDo(()=>createUserWithEmailAndPassword(auth,$('#em').value.trim(),$('#pw').value));
+    case 'signout':return signOut(auth);
+    case 'play':homeErr('');return show('s-bz');
+    case 'toGames':return show('s-games');
+    case 'create':return createRoom();
+    case 'join':return joinRoom();
+    case 'leave':return leave();
+    case 'copy':
+      try{await navigator.clipboard.writeText(code);toast('Room code copied: '+code)}catch(e){toast('Room code: '+code)}
+      return;
+    case 'share':{
+      const url=location.origin+location.pathname+'?room='+code;
+      if(navigator.share){try{await navigator.share({title:'With Friends',text:'Join my Bazooka room: '+code,url:url})}catch(e){}}
+      else{try{await navigator.clipboard.writeText(url);toast('Invite link copied')}catch(e){toast(url)}}
+      return;
+    }
+    case 'tot-':case 'tot+':
+      if(isHost())set(R('total'),Math.max(1,Math.min(10,(room.total||3)+(a==='tot+'?1:-1))));
+      return;
+    case 'start':{
+      const ids=Object.keys(room.players||{});
+      if(!isHost()||ids.length<2)return;
+      return update(R(),startPayload(1,room.total||3,{},{},ids));
+    }
+    case 'mode':bzOn=b.dataset.m==='bz';return render();
+    case 'target':{
+      const g=room.g;
+      if(!g||g.phase!=='choose'||g.landed!==me.uid)return;
+      const arm=!!(bzOn&&bzOf(norm(clean(g)),me.uid)>0);
+      bzOn=false;
+      return set(R('act'),{by:me.uid,target:b.dataset.u,bz:arm});
+    }
+    case 'rps':return set(R('rps/'+me.uid),b.dataset.c);
+    case 'next':{
+      if(!isHost()||!room.g)return;
+      const g=norm(clean(room.g));
+      if(g.phase!=='gameover')return;
+      const ps=room.players||{},ids=g.order.filter(u=>ps[u]);
+      if(g.game<g.total&&ids.length>=2){
+        const bz={};ids.forEach(u=>{if(bzOf(g,u)>0)bz[u]=bzOf(g,u)});
+        return update(R(),startPayload(g.game+1,g.total,bz,g.wins,ids));
+      }
+      return update(R(),{'g/phase':'final',act:null,rps:null});
+    }
+    case 'lobby':if(isHost())return update(R(),{g:null,act:null,rps:null});return;
+    case 'chat':return chatOpen?closeChat():openChat();
+    case 'mic':return toggleMic();
+  }
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');
+  if(!b||b.disabled)return;
+  act(b.dataset.a,b).catch(err=>console.warn(err));
+});
+
+/* ---------- rendering ---------- */
+function renderTop(){
+  $('#t-code').innerHTML=`Room <b>${esc(code)}</b>`;
+  const g=room.g;
+  $('#t-game').textContent=g?(g.phase==='final'?'Final':`Game ${g.game}/${g.total||room.total||'?'}`):'Lobby';
+}
+function startAnim(g){
+  const k=g.game+'-'+g.turn;
+  if(animKey===k)return;
+  animKey=k;clearInterval(animT);animN=0;animUid=null;
+  const s=g.slots||[];if(!s.length)return;
+  animT=setInterval(()=>{
+    animN++;animUid=s[(animN-1)%s.length];
+    if(animN>=10)clearInterval(animT);
+    render();
+  },400);
+}
+function statusHTML(g){
+  const nm=u=>nameOf(u);
+  if(g.phase==='counting')return `<div class="status"><div class="big">Counting…</div><div class="sub">Who will it land on?</div></div>`;
+  if(g.phase==='choose'){
+    if(g.landed!==me.uid)return `<div class="status"><div class="big">It landed on ${esc(nm(g.landed))}</div><div class="sub">Waiting for their pick…</div></div>`;
+    if(room.act&&room.act.by===me.uid)return `<div class="status"><div class="big">Done ✓</div><div class="sub">Applying your move…</div></div>`;
+    const mine=bzOf(g,me.uid),arm=bzOn&&mine>0;
+    return `<div class="status"><div class="big">It landed on you!</div><div class="sub">Pick a player — you can pick yourself.</div></div>
+      ${mine>0?`<div class="seg"><button class="${arm?'':'on'}" data-a="mode" data-m="hand">Take a hand</button><button class="${arm?'on bzon':''}" data-a="mode" data-m="bz">💥 Bazooka ×${mine}</button></div><div class="hint center" style="margin:6px 0 0">${arm?'The bazooka knocks a player out instantly.':'Switch to the bazooka for an instant knockout.'}</div>`:''}
+      <div class="targets">${alive(g).map(u=>`<button class="tg${arm?' arm':''}" data-a="target" data-u="${esc(u)}">${av(u,nm(u),32)}<div class="t"><div class="tn">${esc(nm(u))}${u===me.uid?' (you)':''}</div><div class="hd">${hands(g.hearts[u])}</div></div></button>`).join('')}</div>`;
+  }
+  if(g.phase==='rps'){
+    const inGame=me.uid===g.rpsA||me.uid===g.rpsB,mine=room.rps&&room.rps[me.uid];
+    const duel=`<div class="duel"><div>${av(g.rpsA,nm(g.rpsA))}<div class="who">${esc(nm(g.rpsA))}</div></div><div class="vs">VS</div><div>${av(g.rpsB,nm(g.rpsB))}<div class="who">${esc(nm(g.rpsB))}</div></div></div>`;
+    let body;
+    if(!inGame)body=`<div class="status"><div class="sub">Final duel — you're watching</div></div>`;
+    else if(mine)body=`<div class="status"><div class="big">You picked ${ICON[mine]}</div><div class="sub">Waiting for your opponent…</div></div>`;
+    else body=`<div class="status"><div class="sub">Pick your move</div></div><div class="rps">${[['r','Rock'],['p','Paper'],['s','Scissors']].map(([c,l])=>`<button class="rpsb" data-a="rps" data-c="${c}"><span>${ICON[c]}</span>${l}</button>`).join('')}</div>`;
+    return `<div class="status"><div class="big">Final duel: Rock · Paper · Scissors</div></div>${duel}${body}`;
+  }
+  if(g.phase==='gameover'){
+    const w=g.winner,pick=u=>u===g.rpsA?g.pa:g.pb;
+    const duel=(g.pa&&g.pb)?`<div class="duel">${[g.rpsA,g.rpsB].map((u,i)=>`${i?'<div class="vs">VS</div>':''}<div class="${u===w?'win':''}">${av(u,nm(u))}<div class="who">${esc(nm(u))}</div><div class="pick">${ICON[pick(u)]||'—'}</div></div>`).join('')}</div>`:'';
+    return `<div class="card center"><div class="trophy">🏆</div><div class="status" style="margin:4px 0"><div class="big">${esc(nm(w))} wins game ${g.game}!</div><div class="sub">${esc(g.msg)}</div></div>${duel}
+      ${g.awarded?`<div class="sub" style="margin-top:8px">💥 ${esc(nm(g.awarded))} earned a bazooka (now has ${bzOf(g,g.awarded)})</div>`:''}</div>
+      ${isHost()?`<button class="btn block" data-a="next">${g.game<g.total?'Next game':'Final results'}</button>`:'<div class="hint center">Waiting for the host…</div>'}`;
+  }
+  if(g.phase==='final'){
+    const rows=g.order.map(u=>[u,g.wins[u]||0]).sort((a,b)=>b[1]-a[1]);
+    return `<div class="card"><div class="lbl">Final results</div>${rows.map(([u,w],i)=>`<div class="lb">${i===0&&w>0?'🏆':'<span style="width:20px"></span>'}${av(u,nm(u),32)}<span class="n">${esc(nm(u))}${u===me.uid?' (you)':''}</span><b>${w} win${w===1?'':'s'}</b></div>`).join('')}</div>
+      ${isHost()?'<button class="btn block" data-a="lobby">Back to lobby</button>':'<div class="hint center">Waiting for the host…</div>'}`;
+  }
+  return '';
+}
+function render(){
+  if(!code||!me)return;
+  const el=$('#main'),ps=room.players||{};
+  if(!room.g){
+    animKey='';clearInterval(animT);prevH=null;
+    const ids=Object.keys(ps);
+    el.innerHTML=`<div class="card"><div class="lbl">Room code</div><div class="code">${esc(code)}</div>
+      <div class="row" style="margin-top:12px"><button class="btn sec" data-a="copy">${ic('copy',18)} Copy</button><button class="btn sec" data-a="share">${ic('share',18)} Invite</button></div></div>
+      <div class="card"><div class="lbl">Players · ${ids.length}/10</div><div class="plist">${ids.map(u=>`<div class="pitem">${av(u,ps[u].name,36)}<span class="pn">${esc(ps[u].name)}</span>${u===me.uid?'<span class="you">you</span>':''}${u===room.host?'<span title="Host">👑</span>':''}</div>`).join('')}</div></div>
+      ${isHost()?`<div class="card"><div class="lbl">Number of games</div><div class="stepper"><button class="btn sec" data-a="tot-">−</button><b>${room.total||3}</b><button class="btn sec" data-a="tot+">+</button></div><div class="hint">Bazookas are earned and used within this number of games.</div></div>
+        <button class="btn block" data-a="start"${ids.length<2?' disabled':''}>Start game</button>${ids.length<2?'<div class="hint center">Need at least 2 players</div>':''}`
+      :'<div class="card center">Waiting for the host to start…</div>'}
+      ${RULES}`;
+    return;
+  }
+  const g=norm(clean(room.g)),nm=nameOf;
+  if(g.phase==='counting')startAnim(g);else clearInterval(animT);
+  const n=g.order.length;
+  /* which players just lost hands (for the hit animation) */
+  const hit=new Set();
+  if(prevH&&prevH.game===g.game){for(const u of g.order)if((g.hearts[u]||0)<(prevH.h[u]??3))hit.add(u)}
+  prevH={game:g.game,h:{...g.hearts}};
+  const chips=g.order.map((u,i)=>{
+    const a=-Math.PI/2+i*2*Math.PI/n,x=50+38*Math.cos(a),y=50+38*Math.sin(a),h=g.hearts[u]||0,b=bzOf(g,u);
+    const hl=g.phase==='counting'?animUid===u:(g.phase==='choose'&&g.landed===u);
+    return `<div class="pl${h<=0?' dead':''}${hl?' hl':''}${u===me.uid?' me':''}${hit.has(u)?' hit':''}" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%">${av(u,nm(u))}${b>0?`<span class="bz">💥${b>1?'×'+b:''}</span>`:''}<div class="nm">${esc(nm(u))}</div><div class="hd">${hands(h)}</div></div>`;
+  }).join('');
+  const mid=g.phase==='counting'?(animN||''):(g.phase==='choose'?10:'');
+  const mine=bzOf(g,me.uid);
+  const evt=(g.msg&&(g.phase==='counting'||g.phase==='choose'||g.phase==='rps'))?`<div class="event">${esc(g.msg)}</div>`:'';
+  el.innerHTML=`${g.phase==='final'?'':`<div class="strip"><span class="pill">Game <b>${g.game}/${g.total}</b></span><span class="pill">💥 Your bazookas: <b>${mine}</b></span></div>`}
+    ${g.phase==='final'?'':`<div class="circle"><div class="ring"></div>${chips}<div class="core${g.phase==='counting'?' go':''}"><span class="num${g.phase==='counting'&&animN?' tick':''}">${mid}</span></div></div>`}
+    ${evt}${statusHTML(g)}`;
+  /* bring the action area into view once per state (my pick, duel, results) */
+  const inDuel=g.phase==='rps'&&(me.uid===g.rpsA||me.uid===g.rpsB);
+  const k=(g.phase==='choose'&&g.landed===me.uid)?'c'+g.game+'-'+g.turn:inDuel?'r'+g.game:(g.phase==='gameover'||g.phase==='final')?g.phase+g.game:'';
+  if(k&&k!==scrollKey){scrollKey=k;setTimeout(()=>{const v=$('#view');if(v)v.scrollTo({top:v.scrollHeight,behavior:'smooth'})},60)}
+  else if(!k&&(g.phase==='counting'))scrollKey='';
+}
+
+/* ---------- chat ---------- */
+function updateDock(){
+  $('#pv').textContent=lastMsg||'Chat';
+  const bd=$('#bd');bd.textContent=unread>9?'9+':unread;bd.classList.toggle('hide',!unread);
+  const mic=$('#b-mic');
+  mic.classList.toggle('on',micState==='on');mic.classList.toggle('muted',micState==='muted');
+  $('#mic-ic').innerHTML=ic(micState==='on'?'mic':'micoff');
+  $('#mic-tx').textContent=micState==='on'?'Mic on':micState==='muted'?'Muted':'Mic off';
+}
+function openChat(){
+  chatOpen=true;unread=0;$('#chatpanel').classList.remove('hide');updateDock();
+  const l=$('#chatlog');l.scrollTop=l.scrollHeight;
+}
+function closeChat(){chatOpen=false;const p=$('#chatpanel');if(p)p.classList.add('hide');updateDock()}
+function addChat(m,hist){
+  if(!m)return;
+  const mine=m.u===(me&&me.uid);
+  const d=document.createElement('div');d.className='cm'+(mine?' me':'');
+  d.innerHTML=(mine?'':`<b>${esc(m.n)}</b>`)+esc(m.t);
+  const l=$('#chatlog'),atBottom=l.scrollHeight-l.scrollTop-l.clientHeight<48;
+  l.appendChild(d);
+  while(l.children.length>100)l.removeChild(l.firstChild);
+  if(atBottom||mine)l.scrollTop=l.scrollHeight;
+  lastMsg=(mine?'You':m.n)+': '+m.t;
+  if(!chatOpen&&!hist&&!mine)unread++;
+  updateDock();
+}
+$('#chatform').addEventListener('submit',e=>{
+  e.preventDefault();
+  const t=$('#cm').value.trim();if(!t||!code)return;
+  push(R('chat'),{u:me.uid,n:myName||nameOf(me.uid),t:t.slice(0,200)}).catch(()=>toast('Message not sent'));
+  $('#cm').value='';
+});
+
+/* ---------- voice (PeerJS, free) ---------- */
+let peer=null,stream=null,calls={},micState='off',myPid=null;
+function loadPeerLib(){
+  if(window.Peer)return Promise.resolve();
+  const urls=["https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js","https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"];
+  return new Promise((res,rej)=>{
+    let i=0;
+    const next=()=>{
+      if(i>=urls.length){rej(new Error('peer lib'));return}
+      const s=document.createElement('script');s.src=urls[i++];
+      s.onload=()=>res();
+      s.onerror=()=>{s.remove();next()};
+      document.head.appendChild(s);
+    };
+    next();
+  });
+}
+function initPeer(){
+  loadPeerLib().then(()=>{
+    if(!code||peer)return;
+    myPid='bzk'+code+me.uid.replace(/[^A-Za-z0-9]/g,'').slice(0,8)+Math.random().toString(36).slice(2,6);
+    peer=new Peer(myPid);
+    peer.on('open',()=>{if(code)update(R('players/'+me.uid),{pid:myPid}).catch(()=>{});micSync()});
+    peer.on('call',c=>{c.answer(stream||undefined);hookCall(c)});
+    peer.on('error',e=>console.warn('peer',e.type));
+  }).catch(()=>console.warn('voice library not loaded'));
+}
+function hookCall(c){
+  calls[c.peer]=c;
+  c.on('stream',st=>{
+    let a=document.getElementById('a-'+c.peer);
+    if(!a){a=document.createElement('audio');a.id='a-'+c.peer;a.autoplay=true;a.setAttribute('playsinline','');document.body.appendChild(a)}
+    a.srcObject=st;a.play().catch(()=>{});
+  });
+  const drop=()=>{if(calls[c.peer]===c)delete calls[c.peer]};
+  c.on('close',drop);c.on('error',drop);
+  setTimeout(()=>{if(!c.open)drop()},6000);
+}
+function micSync(){
+  if(!stream||!peer||!peer.open||!code)return;
+  const ps=room.players||{};
+  for(const u in ps){
+    if(u===me.uid||!ps[u].pid)continue;
+    const id=ps[u].pid;
+    if(calls[id])continue;
+    const c=peer.call(id,stream);
+    if(c)hookCall(c);
+  }
+}
+function stopMic(){
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+  stream=null;micState='off';
+  Object.values(calls).forEach(c=>{try{c.close()}catch(e){}});calls={};
+  if(peer){try{peer.destroy()}catch(e){}peer=null}
+  myPid=null;
+  document.querySelectorAll('audio[id^="a-"]').forEach(a=>a.remove());
+  updateDock();
+}
+async function toggleMic(){
+  if(!stream){
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast('Microphone is not supported in this browser');return}
+    try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})}
+    catch(e){toast('Microphone blocked — allow it in your browser settings');return}
+    micState='on';
+    Object.values(calls).forEach(c=>{try{c.close()}catch(e){}});calls={};
+    micSync();
+  }else{
+    const t=stream.getAudioTracks()[0];t.enabled=!t.enabled;micState=t.enabled?'on':'muted';
+  }
+  updateDock();
+}
+updateDock();
+</script>
+</body>
+</html>
